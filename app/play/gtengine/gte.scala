@@ -207,7 +207,7 @@ object gte {
 
   GTCompiler.srcDestFolder = new File("gt-generated-src")
 
-  val viewFolder = "app/gtviews/"
+  val viewFolder = "conf/gtviews/"
   val parentClassLoader: ClassLoader = getClass.getClassLoader
 
   GTJavaCompileToClass.typeResolver = new GTTypeResolver2xImpl()
