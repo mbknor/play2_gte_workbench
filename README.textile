@@ -19,6 +19,9 @@ This is working:
  * Finding template files from disk
  * custom tags
  * FastTag-handling-integration
+ * loading files from modules
+ * resolving template files via resources
+
 
 This is still not working (Works like a todo list):
 
@@ -28,8 +31,6 @@ This is still not working (Works like a todo list):
  * Code in FastTag that was not moved from play 1 to gt-engine
  * render args,
  * system params (_encoding, all the params that are auto added by play 1)
- * resolving template files via resources
- * loading files from modules
  * framework supplied template files like select.html
 
 
@@ -44,3 +45,5 @@ Documentation hints:
 When using GTFastTags, you must have a file called gt-fasttags.txt located on the "root" of your classpath (you can put it in the /conf-folder)
 Each fasttag must have its full classname on a seperate line in this file
 
+Must have 'uses-groovy-templates.txt'-file on root of classpath in all apps/jars that contain groovy templates.
+The template source root folder should be named /gtviews and should also be on the root of the classpath, for example in the conf folder.
