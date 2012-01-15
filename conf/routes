@@ -3,7 +3,7 @@
 # ~~~~
 
 # Home page
-GET     /q                          controllers.Application.index()
+GET     /                   controllers.Application.index()
 GET     /someOtherPage      controllers.Application.someOtherPage(input)
 
 # Map static resources from the /public folder to the /assets URL path
