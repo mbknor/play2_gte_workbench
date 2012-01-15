@@ -157,19 +157,48 @@ class GTTypeResolver2xImpl extends GTTypeResolver {
 }
 
 class GTFileResolver2xImpl(folder: File) extends GTFileResolver.Resolver {
-  def getTemplateLocationReal(queryPath: String): GTTemplateLocationReal = {
-    val file = new File(folder, queryPath);
-    if (file.exists()) {
-      return new GTTemplateLocationReal(queryPath, file.toURI.toURL)
-    } else {
-      return null;
+
+  private val USES_GROOVY_TEMPLATES_FILENAME = "uses-groovy-templates.txt"
+  
+  val gtviewRootURLs = findGTViewRootUrls()
+  
+  
+  private def findGTViewRootUrls() : List[URL] = {
+    import scala.collection.JavaConversions._
+    this.getClass.getClassLoader.getResources(USES_GROOVY_TEMPLATES_FILENAME).toList.map( { f : URL =>
+      // f is the location of the USES_GROOVY_TEMPLATES_FILENAME-file, we must create new url for the
+      // actual template root "folder"
+      val urlString = f.toString.substring(0, f.toString.lastIndexOf("/"))
+      new URL(urlString + "/gtviews/")
+    })
+
+  }
+  
+  private def urlWorks(url : URL) : Boolean = {
+    try {
+      url.openStream().close()
+      return true;
+    } catch {
+      case _ => return false
     }
   }
 
+  def getTemplateLocationReal(queryPath: String): GTTemplateLocationReal = {
+
+    for (i <- 0 until gtviewRootURLs.size ) {
+      val rootUrl = gtviewRootURLs(i)
+      val url = new URL(rootUrl.toString + queryPath)
+      if ( urlWorks(url)) {
+        return new GTTemplateLocationReal(url.toString, url)
+      }
+    }
+    return null
+  }
+
   def getTemplateLocationFromRelativePath(relativePath: String): GTTemplateLocationReal = {
-    val file = new File(folder, relativePath);
-    if (file.exists()) {
-      return new GTTemplateLocationReal(relativePath, file.toURI.toURL)
+    val url = new URL(relativePath)
+    if ( urlWorks(url)) {
+      return new GTTemplateLocationReal(url.toString, url)
     } else {
       return null;
     }

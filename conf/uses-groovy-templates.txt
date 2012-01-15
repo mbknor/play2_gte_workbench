@@ -1,0 +1,7 @@
+All apps/jars containing groovy templates must have this file with the name 'uses-groovy-templates.txt'
+on the root of its classpath.
+
+Then gte can find all such files on the classpath and then locate
+all locations where grovy templates might be found.
+
+The template "root folder" must be in a folder named gtviews on the root of the class path or on the root of the jar.
