@@ -36,12 +36,11 @@ This is still not working (Works like a todo list):
  (This file is going to be updated when progress is made..)
 
 
- ----------
+----------
 
 
- Documentation hints:
+Documentation hints:
 
- When using GTFastTags, you must have a file called gt-fasttags.txt located on the "root" of your classpath (you can put it in the /conf-folder)
- Each fasttag must have its full classname on a seperate line in this file
+When using GTFastTags, you must have a file called gt-fasttags.txt located on the "root" of your classpath (you can put it in the /conf-folder)
+Each fasttag must have its full classname on a seperate line in this file
 
- 

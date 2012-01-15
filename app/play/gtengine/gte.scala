@@ -11,7 +11,6 @@ import play.data.Form
 import play.api.i18n.Messages
 import play.api.cache.Cache
 import java.util.regex.{Pattern, Matcher}
-import groovy.lang.MissingPropertyException
 import play.api.PlayException
 import java.io._
 import java.net.URL
@@ -161,7 +160,7 @@ class GTFileResolver2xImpl(folder: File) extends GTFileResolver.Resolver {
   def getTemplateLocationReal(queryPath: String): GTTemplateLocationReal = {
     val file = new File(folder, queryPath);
     if (file.exists()) {
-      return new GTTemplateLocationReal(queryPath, file)
+      return new GTTemplateLocationReal(queryPath, file.toURI.toURL)
     } else {
       return null;
     }
@@ -170,7 +169,7 @@ class GTFileResolver2xImpl(folder: File) extends GTFileResolver.Resolver {
   def getTemplateLocationFromRelativePath(relativePath: String): GTTemplateLocationReal = {
     val file = new File(folder, relativePath);
     if (file.exists()) {
-      return new GTTemplateLocationReal(relativePath, file)
+      return new GTTemplateLocationReal(relativePath, file.toURI.toURL)
     } else {
       return null;
     }
@@ -221,7 +220,7 @@ object gte {
 
   def template(path: String): GTETemplate = {
     gteHelper.exceptionTranslator({ () =>
-      val gtJavaBase: GTJavaBase = repo.getTemplateInstance(new GTTemplateLocationReal(viewFolder + path, new File(viewFolder + path)))
+      val gtJavaBase: GTJavaBase = repo.getTemplateInstance( GTFileResolver.impl.getTemplateLocationReal(path))
       new GTETemplate(gtJavaBase)
     })
   }
