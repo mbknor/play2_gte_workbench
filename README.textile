@@ -18,6 +18,7 @@ This is working:
  * Error messges showing correct source and lineno in templates
  * Finding template files from disk
  * custom tags
+ * FastTag-handling-integration
 
 This is still not working (Works like a todo list):
 
@@ -30,7 +31,17 @@ This is still not working (Works like a todo list):
  * resolving template files via resources
  * loading files from modules
  * framework supplied template files like select.html
- * FastTag-handling-integration
 
 
  (This file is going to be updated when progress is made..)
+
+
+ ----------
+
+
+ Documentation hints:
+
+ When using GTFastTags, you must have a file called gt-fasttags.txt located on the "root" of your classpath (you can put it in the /conf-folder)
+ Each fasttag must have its full classname on a seperate line in this file
+
+ 

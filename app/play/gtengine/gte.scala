@@ -14,6 +14,8 @@ import java.util.regex.{Pattern, Matcher}
 import groovy.lang.MissingPropertyException
 import play.api.PlayException
 import java.io._
+import java.net.URL
+import org.apache.commons.io.IOUtils
 
 
 abstract class GTJavaBase2xImpl(groovyClass: Class[_ <: GTGroovyBase], templateLocation: GTTemplateLocation) extends GTJavaBase(groovyClass, templateLocation) {
@@ -75,6 +77,9 @@ class GTGroovyBase2xImpl extends GTGroovyBase {
 }
 
 class GTPreCompiler2xImpl(templateRepo: GTTemplateRepo) extends GTPreCompiler(templateRepo) {
+
+  this.customFastTagResolver = GTFastTagResolver2xImpl
+
   override def getJavaBaseClass = classOf[GTJavaBase2xImpl]
 
   override def getGroovyBaseClass = classOf[GTGroovyBase2xImpl]
@@ -219,6 +224,41 @@ object gte {
       val gtJavaBase: GTJavaBase = repo.getTemplateInstance(new GTTemplateLocationReal(viewFolder + path, new File(viewFolder + path)))
       new GTETemplate(gtJavaBase)
     })
+  }
+
+}
+
+object GTFastTagResolver2xImpl extends GTFastTagResolver {
+
+  val fastTagResolvers = getFastTagResolvers
+
+
+  def resolveFastTag(tagName: String) : String = {
+    for (i <- 0 until fastTagResolvers.size ) {
+      val resolver = fastTagResolvers(i)
+      val fastTag = resolver.resolveFastTag(tagName)
+      if ( fastTag != null) {
+        return fastTag
+      }
+    }
+
+    return null
+  }
+
+  private def getFastTagResolvers : List[GTFastTagResolver] = {
+    val GT_FASTTAGS_FILENAME = "gt-fasttags.txt"
+    import scala.collection.JavaConversions._
+    this.getClass.getClassLoader.getResources(GT_FASTTAGS_FILENAME).toList.map( { f : URL =>
+      val lines : Array[String] = IOUtils.toString( f.openStream(), "utf-8").split("\\r?\\n")
+      lines.map({ clazzName : String =>
+        if ( clazzName.trim().startsWith("#") ) {
+          // Skip it - comment
+          List()
+        } else {
+          List(this.getClass.getClassLoader.loadClass(clazzName.trim()).asInstanceOf[Class[GTFastTagResolver]].newInstance())
+        }
+      }).flatten
+    } ).flatten
   }
 
 }

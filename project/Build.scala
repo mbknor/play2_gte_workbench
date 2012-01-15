@@ -10,6 +10,7 @@ object ApplicationBuild extends Build {
     val appDependencies = Seq(
       // Add your project dependencies here,
       "kjetland" % "gt-engine_2.9.1" % "0.1.4" changing()
+
     )
 
     val main = PlayProject(appName, appVersion, appDependencies, mainLang = JAVA).settings(
