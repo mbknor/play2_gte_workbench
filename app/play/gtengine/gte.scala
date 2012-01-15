@@ -83,7 +83,6 @@ class GTPreCompiler2xImpl(templateRepo: GTTemplateRepo) extends GTPreCompiler(te
   //override def checkAndPatchActionStringsInTagArguments(tagArgs : String) : String = {
   // Not implementing support for @ in args..
 
-
   val staticFileP = Pattern.compile("^'(.*)'$")
 
   override def generateRegularActionPrinter(absolute: Boolean, _action: String, sc: SourceContext, lineNo: Int): GTFragmentCode = {
@@ -127,7 +126,6 @@ class GTPreCompiler2xImpl(templateRepo: GTTemplateRepo) extends GTPreCompiler(te
 class PreCompilerFactory extends GTPreCompilerFactory {
   def createCompiler(templateRepo: GTTemplateRepo) = new GTPreCompiler2xImpl(templateRepo)
 }
-
 
 class GTTypeResolver2xImpl extends GTTypeResolver {
 
@@ -173,7 +171,6 @@ class GTFileResolver2xImpl(folder: File) extends GTFileResolver.Resolver {
     }
   }
 }
-
 
 
 class GTETemplate(gtJavaBase: GTJavaBase) {
@@ -223,8 +220,6 @@ object gte {
       new GTETemplate(gtJavaBase)
     })
   }
-  
-
 
 }
 
@@ -271,8 +266,8 @@ object gteHelper {
           import scalax.io._
           throw new PlayException(
             "Template Compilation Error",
-            "[%s: %s]".format(e.getCause.getClass.getSimpleName, e.getCause.getMessage),
-            Some(e.getCause)) with PlayException.ExceptionSource {
+            "[%s: %s]".format(e.getClass.getSimpleName, e.getMessage),
+            Some(e)) with PlayException.ExceptionSource {
             def line = Some(e.oneBasedLineNo)
   
             def position = None
