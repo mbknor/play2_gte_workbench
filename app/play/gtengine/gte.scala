@@ -19,7 +19,7 @@ import org.apache.commons.io.IOUtils
 
 abstract class GTJavaBase2xImpl(groovyClass: Class[_ <: GTGroovyBase], templateLocation: GTTemplateLocation) extends GTJavaBase(groovyClass, templateLocation) {
 
-  var form: Form[_ <: AnyRef] = null
+  var form: Option[Form[_ <: AnyRef]] = None
 
   def getRawDataClass = null
 
@@ -31,22 +31,14 @@ abstract class GTJavaBase2xImpl(groovyClass: Class[_ <: GTGroovyBase], templateL
 
   def escapeCsv(csv: String) = org.apache.commons.lang.StringEscapeUtils.escapeCsv(csv)
 
-  def validationHasErrors(): Boolean = {
-    if (form == null) {
-      return false
-    } else {
-      return form.hasErrors
-    }
-  }
+  def validationHasErrors(): Boolean = form.getOrElse( return false).hasErrors
 
   def validationHasError(name: String): Boolean = {
-    if (form == null) {
-      return false
+
+    val errors = form.getOrElse( return false).errors().get(name)
+    if (errors == null || errors.size() == 0) {
+      return false;
     } else {
-      val errors = form.errors().get(name);
-      if (errors == null || errors.size() == 0) {
-        return false;
-      }
       return true;
     }
   }
@@ -213,25 +205,62 @@ class GTFileResolver2xImpl(folder: File) extends GTFileResolver.Resolver {
 }
 
 
-class GTETemplate(gtJavaBase: GTJavaBase) {
+class GTETemplate(gtJavaBase: GTJavaBase2xImpl) {
+
+  protected var allParams : Map[String,  AnyRef] = Map()
+  protected var form : Option[Form[_ <: AnyRef]] = None
+  
+  def withForm(form : Form[_ <: AnyRef]) : GTETemplate = {
+    this.form = Some(form)
+    this
+  }
+  
+  def addParams(params: java.util.Map[String, AnyRef]): GTETemplate = {
+    import scala.collection.JavaConversions._
+    allParams = allParams++params
+    this
+  }
+
+  def addParams(params: Map[String, AnyRef]): GTETemplate = {
+    allParams = allParams++params
+    this
+  }
+  
+  def addParam(name : String,  value : AnyRef) : GTETemplate = {
+    allParams = allParams+(name->value)
+    this
+  }
 
   def render(params: java.util.Map[String, AnyRef]): Html = {
     import scala.collection.JavaConversions._
-    _render(params.toMap)
+    allParams = allParams++params
+    _render()
   }
 
   def render(params: Map[String, AnyRef]): Html = {
-    _render(params)
+    allParams = allParams++params
+    _render()
   }
 
-  private def _render(params: Map[String, AnyRef]): Html = {
-    import scala.collection.JavaConversions._
+  def render(): Html = {
+      _render()
+    }
 
+  private def _render(): Html = {
+    import scala.collection.JavaConversions._
+    
+    gtJavaBase.form = this.form
+    
+    // add system params
+    if ( !form.isEmpty ) {
+      allParams = allParams + ("_form" -> form.get)
+    }
+    
     gteHelper.exceptionTranslator( { () =>
-      gtJavaBase.renderTemplate(params)
+      gtJavaBase.renderTemplate(allParams)
     })
 
-    new Html(gtJavaBase.getAsString)
+    new Html(gtJavaBase.getAsString) // TODO: Can be optimized to not return string just yet..
   }
 }
 
@@ -257,7 +286,7 @@ object gte {
   def template(path: String): GTETemplate = {
     gteHelper.exceptionTranslator({ () =>
       val gtJavaBase: GTJavaBase = repo.getTemplateInstance( GTFileResolver.impl.getTemplateLocationReal(path))
-      new GTETemplate(gtJavaBase)
+      new GTETemplate(gtJavaBase.asInstanceOf[GTJavaBase2xImpl])
     })
   }
 

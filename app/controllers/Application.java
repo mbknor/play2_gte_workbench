@@ -3,6 +3,9 @@ package controllers;
 import play.api.i18n.Messages;
 import play.api.templates.Html;
 import play.core.Router;
+import play.data.Form;
+import play.data.format.Formats;
+import play.data.validation.Constraints;
 import play.gtengine.gte;
 import play.mvc.*;
 import views.html.index;
@@ -17,7 +20,12 @@ public class Application extends Controller {
     
     public static class Data {
         public String id;
+
+        @Constraints.Required
         public String name;
+
+        public Data() {
+        }
 
         public Data(String id, String name) {
             this.id = id;
@@ -51,6 +59,16 @@ public class Application extends Controller {
     
     public static Result scalaTemplate() {
         return ok( index.render("hi"));
+    }
+    
+    public static Result input1() {
+        Form<Data> form = form(Data.class).bindFromRequest();
+
+        System.out.println("errors: " + form.hasErrors() );
+        return ok( gte.template("input1.html")
+                .withForm(form)
+                .addParam("is_error", form.hasErrors())
+                .render() );
     }
 
 }

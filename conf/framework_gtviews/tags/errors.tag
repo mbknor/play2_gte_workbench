@@ -8,9 +8,9 @@ errors are returned
 %{ 
         _field = _arg ?: _field 
         if (! _field) { 
-                validations = play.data.validation.Validation.errors() 
+                validations = _form.errors()
         } else { 
-                validations = play.data.validation.Validation.errors(_field) 
+                validations = _form.errors(_field)
         } 
         size = validations.size()
         attrsList = [];
