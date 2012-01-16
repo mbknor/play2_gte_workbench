@@ -51,7 +51,9 @@ abstract class GTJavaBase2xImpl(groovyClass: Class[_ <: GTGroovyBase], templateL
     }
   }
 
-  def messagesGet(key: Any, args: Object*): String = Messages.apply(key.toString, args)
+  override def resolveMessage(key: Any, args: Array[Object]): String = {
+    Messages.apply(key.toString, args:_*)
+  }
 
   def cacheGet(key: String) = {
     import play.api.Play.current
@@ -165,13 +167,18 @@ class GTFileResolver2xImpl(folder: File) extends GTFileResolver.Resolver {
   
   private def findGTViewRootUrls() : List[URL] = {
     import scala.collection.JavaConversions._
-    this.getClass.getClassLoader.getResources(USES_GROOVY_TEMPLATES_FILENAME).toList.map( { f : URL =>
+
+    this.getClass.getClassLoader.getResources(USES_GROOVY_TEMPLATES_FILENAME).toList.distinct.map( { f : URL =>
       // f is the location of the USES_GROOVY_TEMPLATES_FILENAME-file, we must create new url for the
       // actual template root "folder"
-      val urlString = f.toString.substring(0, f.toString.lastIndexOf("/"))
-      new URL(urlString + "/gtviews/")
-    })
-
+      val urlBase = f.toString.substring(0, f.toString.lastIndexOf("/"))
+      // TODO: Use filter instead
+      // read the file to find all root folders
+      val lines : Array[String] = IOUtils.toString( f.openStream(), "utf-8").split("\\r?\\n")
+      lines.filterNot( _.trim().startsWith("#")).map( {path : String =>
+        new URL(urlBase + path.trim())
+      })
+    }).flatten
   }
   
   private def urlWorks(url : URL) : Boolean = {
@@ -262,6 +269,7 @@ object GTFastTagResolver2xImpl extends GTFastTagResolver {
 
 
   def resolveFastTag(tagName: String) : String = {
+    
     for (i <- 0 until fastTagResolvers.size ) {
       val resolver = fastTagResolvers(i)
       val fastTag = resolver.resolveFastTag(tagName)
@@ -278,15 +286,10 @@ object GTFastTagResolver2xImpl extends GTFastTagResolver {
     import scala.collection.JavaConversions._
     this.getClass.getClassLoader.getResources(GT_FASTTAGS_FILENAME).toList.map( { f : URL =>
       val lines : Array[String] = IOUtils.toString( f.openStream(), "utf-8").split("\\r?\\n")
-      lines.map({ clazzName : String =>
-        if ( clazzName.trim().startsWith("#") ) {
-          // Skip it - comment
-          List()
-        } else {
-          List(this.getClass.getClassLoader.loadClass(clazzName.trim()).asInstanceOf[Class[GTFastTagResolver]].newInstance())
-        }
+      lines.filterNot( _.trim().startsWith("#")).map( {clazzName : String =>
+        this.getClass.getClassLoader.loadClass(clazzName.trim()).asInstanceOf[Class[GTFastTagResolver]].newInstance()
+      })
       }).flatten
-    } ).flatten
   }
 
 }

@@ -1,7 +1,8 @@
 #{extends 'main.html'/}
 hello world, ${name}!
 <br>
-Message: &{'someText'}
+Message: &{'someText', 'the param'}<br>
+Message: &{'someText2'}
 <hr>
 
 *{
@@ -28,3 +29,5 @@ ${q.w.e}
 
 <hr>
 FastTag: #{testFastTag }Some content to the fasttag#{/testFastTag}
+<hr>
+#{select 'someName', items: dataList, valueProperty: 'id', labelProperty:'name'/}

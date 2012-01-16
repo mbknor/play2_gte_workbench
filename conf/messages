@@ -1,1 +1,1 @@
-someText = Text from message file
+someText = Text from message file with param: {0}
