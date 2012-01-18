@@ -11,13 +11,13 @@
     (_arg ) && (_src = _arg);
 
     if (!_src) {
-        throw new play.exceptions.TagInternalException("src attribute cannot be empty for script tag");
+        throw new play.template2.exceptions.GTTemplateRuntimeException("src attribute cannot be empty for script tag");
     }
-    _src = "/public/javascripts/" + _src
+    _src = "/assets/javascripts/" + _src
     try {
-        _abs = play.mvc.Router.reverseWithCheck(_src, play.Play.getVirtualFile(_src), false);
+        _abs = controllers.routes.Assets.at(\"/public/javascripts/" + _src + "\").url();
     } catch (Exception ex) {
-        throw new play.exceptions.TagInternalException("File not found: " + _src);
+        throw new play.template2.exceptions.GTTemplateRuntimeException("File not found: " + _src);
     }
 }%
 <script type="text/javascript" language="javascript"#{if _id} id="${_id}"#{/if}#{if _charset} charset="${_charset}"#{/if}  src="${_abs}"></script>

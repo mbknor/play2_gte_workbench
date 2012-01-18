@@ -16,7 +16,7 @@ errors are returned
         attrsList = [];
         validations.eachWithIndex() { item, i -> 
                 attrs = [:] 
-                attrs.put('error', item) 
+                attrs.put('error', item.getValue().get(0).message())
                 attrs.put('error_index', i+1) 
                 attrs.put('error_isLast', (i+1) == size) 
                 attrs.put('error_isFirst', i==0) 

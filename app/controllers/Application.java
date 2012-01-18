@@ -12,6 +12,7 @@ import views.html.index;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -49,8 +50,14 @@ public class Application extends Controller {
         dataList.add( new Data("a", "Book"));
         dataList.add( new Data("b", "Car"));
         params.put("dataList", dataList);
+
+
+
         
-        return ok(gte.template("index.html").render(params));
+        return ok(gte
+                .template("index.html")
+                .addParam("today", new Date())
+                .render(params));
     }
     
     public static Result someOtherPage(String input) {

@@ -10,12 +10,12 @@
     (_arg ) && (_src = _arg);
 
     if (!_src) {
-        throw new play.exceptions.TagInternalException("src attribute cannot be empty for stylesheet tag");
+        throw new play.template2.exceptions.GTTemplateRuntimeException("src attribute cannot be empty for stylesheet tag");
     }
-    _src = "/public/stylesheets/" + _src
+    _src = "/assets/stylesheets/" + _src
     try {
-        _abs = play.mvc.Router.reverseWithCheck(_src, play.Play.getVirtualFile(_src), false);
+        _abs = controllers.routes.Assets.at(\"/public/stylesheets/" + _src + "\").url();
     } catch (Exception ex) {
-        throw new play.exceptions.TagInternalException("File not found: " + _src);
+        throw new play.template2.exceptions.GTTemplateRuntimeException("File not found: " + _src);
     }}%
 <link rel="stylesheet" type="text/css"#{if _id} id="${_id}"#{/if}#{if _title} title="${_title}"#{/if} href="${_abs}"#{if _media} media="${_media}"#{/if} charset="${_response_encoding}" ></link>

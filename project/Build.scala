@@ -13,6 +13,8 @@ object ApplicationBuild extends Build {
 
     )
 
+    javacOptions += "-g"
+
     val main = PlayProject(appName, appVersion, appDependencies, mainLang = JAVA).settings(
       // Add your own project settings here
       resolvers ++= Seq(Resolver.url("My local ivy repo", url("file:///Users/mortenkjetland/.ivy2/local/"))(Resolver.ivyStylePatterns))

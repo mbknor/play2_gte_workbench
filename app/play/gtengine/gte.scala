@@ -11,19 +11,29 @@ import play.data.Form
 import play.api.i18n.Messages
 import play.api.cache.Cache
 import java.util.regex.{Pattern, Matcher}
-import play.api.PlayException
 import java.io._
 import java.net.URL
 import org.apache.commons.io.IOUtils
+import play.api.{Play, PlayException}
+import play.mvc.Http
+import java.lang.reflect.Method
 
+
+class RawData(val data : String)
 
 abstract class GTJavaBase2xImpl(groovyClass: Class[_ <: GTGroovyBase], templateLocation: GTTemplateLocation) extends GTJavaBase(groovyClass, templateLocation) {
 
   var form: Option[Form[_ <: AnyRef]] = None
 
-  def getRawDataClass = null
+  def getRawDataClass = classOf[RawData]
 
-  def convertRawDataToString(p1: AnyRef) = throw new Exception("Not impl yet")
+  def convertRawDataToString(rawData: AnyRef) = {
+    rawData match {
+      case r : RawData => r.data
+      case _ => throw new Exception("Not of type RawData")
+    }
+    
+  }
 
   def escapeHTML(html: String) = org.apache.commons.lang.StringEscapeUtils.escapeHtml(html)
 
@@ -78,8 +88,10 @@ class GTPreCompiler2xImpl(templateRepo: GTTemplateRepo) extends GTPreCompiler(te
   override def getGroovyBaseClass = classOf[GTGroovyBase2xImpl]
 
   // must modify all use of @{} in tag args
-  //override def checkAndPatchActionStringsInTagArguments(tagArgs : String) : String = {
-  // Not implementing support for @ in args..
+  override def checkAndPatchActionStringsInTagArguments(tagArgs : String) : String = {
+    val r = tagArgs.replaceAll("""\@(.+)(?:\s|$)""", "_('controllers.routes').$1.url()")
+    r
+  }
 
   val staticFileP = Pattern.compile("^'(.*)'$")
 
@@ -204,6 +216,28 @@ class GTFileResolver2xImpl(folder: File) extends GTFileResolver.Resolver {
   }
 }
 
+object GTJavaExtensionMethodResolver2impl extends GTJavaExtensionMethodResolver {
+  private val GT_JAVA_EXTENSIONS_FILENAME = "gt-java-extensions.txt"
+  val methodName2ClassMapping : Map[String, Class[_]] = {
+    
+    import scala.collection.JavaConversions._
+    // Find all JavaExtension-classes
+    val allClasses = this.getClass.getClassLoader.getResources(GT_JAVA_EXTENSIONS_FILENAME).toList.map( { f : URL =>
+      val lines : Array[String] = IOUtils.toString( f.openStream(), "utf-8").split("\\r?\\n")
+      lines.filterNot( _.trim().startsWith("#")).map( {clazzName : String =>
+        this.getClass.getClassLoader.loadClass(clazzName.trim())
+      }).toList
+    }).flatten
+
+    // find all methods
+    allClasses.map( {c: Class[_] => c.getDeclaredMethods.map( (_.getName -> c) ) }).flatten.toMap
+  }
+  
+  
+  def findClassWithMethod(methodName: String) : Class[_] = {
+    methodName2ClassMapping.getOrElse(methodName, null)
+  }
+}
 
 class GTETemplate(gtJavaBase: GTJavaBase2xImpl) {
 
@@ -255,6 +289,18 @@ class GTETemplate(gtJavaBase: GTJavaBase2xImpl) {
     if ( !form.isEmpty ) {
       allParams = allParams + ("_form" -> form.get)
     }
+    allParams = allParams ++ Map(
+      ("_response_encoding" -> "utf-8"),
+      ("play" -> Play),
+      ("messages" -> Messages),
+      ("flash", Http.Context.current().flash()),
+      ("session", Http.Context.current().session()),
+      ("request", Http.Context.current().request()),
+      ("response", Http.Context.current().response())
+    )
+
+
+
     
     gteHelper.exceptionTranslator( { () =>
       gtJavaBase.renderTemplate(allParams)
@@ -275,6 +321,7 @@ object gte {
   val viewFolder = "conf/gtviews/"
   val parentClassLoader: ClassLoader = getClass.getClassLoader
 
+  GTGroovyPimpTransformer.gtJavaExtensionMethodResolver = GTJavaExtensionMethodResolver2impl
   GTJavaCompileToClass.typeResolver = new GTTypeResolver2xImpl()
   GTGroovyPimpTransformer.gtJavaExtensionMethodResolver = new GTJavaExtensionMethodResolver2xImpl
 

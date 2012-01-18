@@ -1,2 +1,3 @@
 # Add full classname to all your GTFastTag-classes - one class on each line
+play.gtengine.GTFastTagsInternal2impl
 fasttag.CustomFastTags
