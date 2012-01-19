@@ -5,7 +5,7 @@ import groovy.util.XmlSlurper;
 import groovy.util.slurpersupport.GPathResult;
 import org.apache.commons.lang.StringEscapeUtils;
 import play.api.Logger;
-import play.api.i18n.Messages;
+import play.i18n.Messages;
 import play.mvc.Http;
 import play.template2.legacy.GTContentRendererFakeClosure;
 
@@ -195,38 +195,36 @@ public class JavaExtensions {
     }
 
     public static String since(Date date, Boolean stopAtMonth) {
-        /*
+
         Date now = new Date();
         if (now.before(date)) {
             return "";
         }
         long delta = (now.getTime() - date.getTime()) / 1000;
         if (delta < 60) {
-            return Messages.apply("since.seconds", delta, pluralize(delta));
+            return Messages.current().get("since.seconds", delta, pluralize(delta));
         }
         if (delta < 60 * 60) {
             long minutes = delta / 60;
-            return Messages.apply("since.minutes", minutes, pluralize(minutes));
+            return Messages.current().get("since.minutes", minutes, pluralize(minutes));
         }
         if (delta < 24 * 60 * 60) {
             long hours = delta / (60 * 60);
-            return Messages.apply("since.hours", hours, pluralize(hours));
+            return Messages.current().get("since.hours", hours, pluralize(hours));
         }
         if (delta < 30 * 24 * 60 * 60) {
             long days = delta / (24 * 60 * 60);
-            return Messages.apply("since.days", days, pluralize(days));
+            return Messages.current().get("since.days", days, pluralize(days));
         }
         if (stopAtMonth) {
-            return asdate(date.getTime(), Messages.get("since.format"));
+            return asdate(date.getTime(), Messages.current().get("since.format"));
         }
         if (delta < 365 * 24 * 60 * 60) {
             long months = delta / (30 * 24 * 60 * 60);
-            return Messages.apply("since.months", months, pluralize(months));
+            return Messages.current().get("since.months", months, pluralize(months));
         }
         long years = delta / (365 * 24 * 60 * 60);
-        return Messages.apply("since.years", years, pluralize(years));
-        */
-        throw new RuntimeException("since not impl yet due to missing java Message api");
+        return Messages.current().get("since.years", years, pluralize(years));
     }
 
     public static String asdate(Long timestamp, String pattern) {

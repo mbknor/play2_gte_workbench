@@ -1,12 +1,12 @@
 package controllers;
 
-import play.api.i18n.Messages;
 import play.api.templates.Html;
 import play.core.Router;
 import play.data.Form;
 import play.data.format.Formats;
 import play.data.validation.Constraints;
 import play.gtengine.gte;
+import play.i18n.Messages;
 import play.mvc.*;
 import views.html.index;
 
@@ -36,7 +36,7 @@ public class Application extends Controller {
 
     public static Result index() {
 
-        //System.out.println("message: " + Messages.apply("qwe", new String[]{}));
+        System.out.println("message: " + Messages.current().get("someText", "X"));
 
         Map<String, Object> params = new HashMap<String, Object>();
         params.put("name", "Morten");
